@@ -67,7 +67,7 @@ def download_url(url, download_dir, fname=None, check_overwrite=True):
 
 
 def download_datasets(
-    split, tasks, source, all_data=False, overwrite=False, dryrun=False
+    split, tasks, source, task_type=None, all_data=False, overwrite=False, dryrun=False
 ):
 
     if all_data:
@@ -76,7 +76,12 @@ def download_datasets(
         split = ["pretrain", "target"]
 
     if tasks is None:
-        tasks = list(ATOMIC_TASK_DATASETS.keys()) + list(COMPOSITE_TASK_DATASETS.keys())
+        if task_type is None or ("atomic" in task_type and "composite" in task_type):
+            tasks = list(ATOMIC_TASK_DATASETS.keys()) + list(COMPOSITE_TASK_DATASETS.keys())
+        elif "atomic" in task_type:
+            tasks = list(ATOMIC_TASK_DATASETS.keys())
+        elif "composite" in task_type:
+            tasks = list(COMPOSITE_TASK_DATASETS.keys())
 
     for task_name in tasks:
         for sp in split:
@@ -188,6 +193,15 @@ if __name__ == "__main__":
         default=None,
         help="Tasks to download datasets for. Defaults to all tasks",
     )
+
+    parser.add_argument(
+        "--task_type",
+        type=str,
+        nargs="+",
+        default=None,
+        choices=["atomic", "composite"],
+        help="Task type(s) to download. Choose one or both: atomic, composite. Defaults to both. Ignored if --tasks is specified.",
+    )
     parser.add_argument(
         "--source",
         type=str,
@@ -231,6 +245,7 @@ if __name__ == "__main__":
         all_data=args.all,
         split=args.split,
         tasks=args.tasks,
+        task_type=args.task_type,
         source=args.source,
         overwrite=args.overwrite,
         dryrun=args.dryrun,
